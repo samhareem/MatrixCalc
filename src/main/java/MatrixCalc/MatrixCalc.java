@@ -1,4 +1,4 @@
-package samhareem.MatrixCalc;
+package MatrixCalc;
 
 /**
  * Contains methods for calculating matrix products. The class currently supports addition, subtraction,
@@ -48,12 +48,13 @@ public final class MatrixCalc {
      * @return Result of addition
      */
     private static double[][] addMatrices(double[][] firstMatrix, double[][] secondMatrix) {
+        double[][] ret = new double[firstMatrix.length][firstMatrix[0].length];
         for (int row = 0; row < firstMatrix.length; row++) {
             for (int column = 0; column < firstMatrix[0].length; column++) {
-                firstMatrix[row][column] += secondMatrix[row][column];
+                ret[row][column] = firstMatrix[row][column] + secondMatrix[row][column];
             }
         }
-        return firstMatrix;
+        return ret;
     }
 
     /**
@@ -65,12 +66,13 @@ public final class MatrixCalc {
      * @return Result of subtraction
      */
     private static double[][] subtractMatrices(double[][] firstMatrix, double[][] secondMatrix) {
+        double[][] ret = new double[firstMatrix.length][firstMatrix[0].length];
         for (int row = 0; row < firstMatrix.length; row++) {
             for (int column = 0; column < firstMatrix[0].length; column++) {
-                firstMatrix[row][column] -= secondMatrix[row][column];
+                ret[row][column] = firstMatrix[row][column] - secondMatrix[row][column];
             }
         }
-        return firstMatrix;
+        return ret;
     }
 
     /**
