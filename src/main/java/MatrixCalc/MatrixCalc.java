@@ -40,6 +40,29 @@ public final class MatrixCalc {
     }
 
     /**
+     * Checks that the matrix is rectangular and scales it by multiplying each value with the scalar.
+     *
+     * @param matrix Matrix to be scaled
+     * @param scalar The value by which to scale the matrix
+     * @return Returns the result of the multiplication as a 2-dimensional double array
+     */
+    public static double[][] scale(double[][] matrix, double scalar) {
+        if (!isRectangular(matrix)) {
+            throw new IllegalArgumentException("Matrix must be rectangular");
+        }
+        int rows = matrix.length;
+        int columns = matrix[0].length;
+        double[][] ret = new double[rows][columns];
+        for (int row = 0; row < rows; row++) {
+            for (int column = 0; column < columns; column++) {
+                ret[row][column] = matrix[row][column] * scalar;
+            }
+        }
+        return ret;
+    }
+
+
+    /**
      * Adds the values of the two matrices together.
      *
      * @param firstMatrix First matrix to be added

@@ -4,9 +4,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.Random;
+
 import static org.junit.Assert.*;
 
 public class MatrixCalcTest {
+    private Random numberGenerator= new Random();
     @Rule
     public final ExpectedException exception =   ExpectedException.none();
 
@@ -72,6 +75,31 @@ public class MatrixCalcTest {
         for (int y = 0; y < matrixA.length; y++) {
             for (int x = 0; x < matrixA[0].length; x++) {
                 assertEquals(matrixA[y][x]-matrixA[y][x], result[y][x], 0.001);
+            }
+        }
+    }
+
+    @Test
+    public void scaleThrowsExceptionWithNonRectangularMatrix() {
+        double[][] invalidMatrix = {{0,1,2}, {0,1,2,3}, {0,1,2}};
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.scale(invalidMatrix, numberGenerator.nextDouble());
+    }
+
+    @Test
+    public void scaleThrowsExceptionWithEmptyMatrix() {
+        double[][] emptyMatrix = new double[0][0];
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.scale(emptyMatrix, numberGenerator.nextDouble());
+    }
+
+    @Test
+    public void scaleFunctionsProperly() {
+        double scalar = numberGenerator.nextDouble();
+        double[][] result = MatrixCalc.scale(matrixA, scalar);
+        for (int y = 0; y < matrixA.length; y++) {
+            for (int x = 0; x < matrixA[0].length; x++) {
+                assertEquals(matrixA[y][x] * scalar, result[y][x], 0.001);
             }
         }
     }
