@@ -104,4 +104,26 @@ public class MatrixCalcTest {
         }
     }
 
+    @Test
+    public void multiplyThrowsExceptionWithNonRectangularMatrix() {
+        double[][] invalidMatrix = {{0,1,2}, {0,1,2,3}, {0,1,2}};
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.multiply(invalidMatrix, matrixA);
+    }
+
+    @Test
+    public void multiplyThrowsExceptionWithEmptyMatrix() {
+        double[][] emptyMatrix = new double[0][0];
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.multiply(emptyMatrix, matrixA);
+    }
+
+    @Test
+    public void multiplyThrowsExceptionWithIncomptabileMatrices() {
+        double[][] twoByTwoMatrix = new double[2][2];
+        double[][] threeByTwoMatrix = new double[3][2];
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.multiply(twoByTwoMatrix, threeByTwoMatrix);
+    }
+
 }
