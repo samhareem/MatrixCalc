@@ -313,8 +313,12 @@ public final class MatrixCalc {
      * @param value Comparison value
      * @return Next power of two
      */
-    private static int findNextPower(int value) {
-        return (int) Math.pow(2, Math.ceil(Math.log(value) / Math.log(2)));
+    private static int closestPowerOfTwo(int value) {
+        int closest = 2;
+        while (closest < value) {
+            closest *= 2;
+        }
+        return closest;
     }
 
     /**

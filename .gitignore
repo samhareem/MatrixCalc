@@ -8,3 +8,6 @@ buildNumber.properties
 .mvn/timing.properties
 MatrixCalc.iml
 .idea/
+target/
+.*
+*.*~

@@ -10,6 +10,18 @@ public class main {
 
     public static void main(String[] args) {
         Random numGenerator = new Random();
+        for (int i = 0; i < 1; i++) {
+            double random = numGenerator.nextInt();
+            double a = Math.log(10);
+            double b = MatrixCalc.ln(10);
+            System.out.println(a);
+            System.out.println(b);
+            if ((int) a != (int) b) {
+                System.out.println("Kusi " + i);
+            }
+        }
+    }
+        /*Random numGenerator = new Random();
         double[][] matrixA = createMatrix(2500, numGenerator);
         double[][] matrixB = createMatrix(2500, numGenerator);
 
@@ -46,5 +58,5 @@ public class main {
             }
         }
         return ret;
-    }
+    }*/
 }
