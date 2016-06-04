@@ -7,8 +7,8 @@ package MatrixCalc;
  */
 public final class MatrixCalc {
     /**
-     * Matrices where the longest side is less than this value will be multiplied using the naive method. For larger
-     * matrices, the Strassen method will be used.
+     * Matrices where the longest side is less than the cutoff value will be multiplied using the naive method. For larger
+     * matrices, the Strassen method will be used. The value must be at least 3.
      */
     private static int strassenCutoff = 257;
 
@@ -162,7 +162,7 @@ public final class MatrixCalc {
         int originalRows = firstMatrix.length;
         int originalColumns = secondMatrix[0].length;
         // Calculates the next power of two that is equal or larger than the length of the longest side
-        int calcSize = findNextPower(longestSide);
+        int calcSize = closestPowerOfTwo(longestSide);
         // If necessary, increases the size of the matrices
         if (firstMatrix.length != calcSize || firstMatrix[0].length != calcSize) {
             firstMatrix = increaseMatrixSize(firstMatrix, calcSize);
@@ -178,7 +178,7 @@ public final class MatrixCalc {
         } else {
             double[][] ret = new double[originalRows][originalColumns];
             for (int row = 0; row < originalRows; row++) {
-                System.arraycopy(strassenResult[row], 0, ret[row], 0, originalColumns);
+                copyRow(strassenResult[row], 0, ret[row], 0, originalColumns);
             }
             return ret;
         }
@@ -208,14 +208,14 @@ public final class MatrixCalc {
 
         // Divide the matrices being multiplied into the 8 submatrices
         for (int row = 0; row < halfpoint; row++) {
-            System.arraycopy(firstMatrix[row], 0, a11[row], 0, halfpoint);
-            System.arraycopy(firstMatrix[row], halfpoint, a12[row], 0, halfpoint);
-            System.arraycopy(firstMatrix[row + halfpoint], 0, a21[row], 0, halfpoint);
-            System.arraycopy(firstMatrix[row + halfpoint], halfpoint, a22[row], 0, halfpoint);
-            System.arraycopy(secondMatrix[row], 0, b11[row], 0, halfpoint);
-            System.arraycopy(secondMatrix[row], halfpoint, b12[row], 0, halfpoint);
-            System.arraycopy(secondMatrix[row + halfpoint], 0, b21[row], 0, halfpoint);
-            System.arraycopy(secondMatrix[row + halfpoint], halfpoint, b22[row], 0, halfpoint);
+            copyRow(firstMatrix[row], 0, a11[row], 0, halfpoint);
+            copyRow(firstMatrix[row], halfpoint, a12[row], 0, halfpoint);
+            copyRow(firstMatrix[row + halfpoint], 0, a21[row], 0, halfpoint);
+            copyRow(firstMatrix[row + halfpoint], halfpoint, a22[row], 0, halfpoint);
+            copyRow(secondMatrix[row], 0, b11[row], 0, halfpoint);
+            copyRow(secondMatrix[row], halfpoint, b12[row], 0, halfpoint);
+            copyRow(secondMatrix[row + halfpoint], 0, b21[row], 0, halfpoint);
+            copyRow(secondMatrix[row + halfpoint], halfpoint, b22[row], 0, halfpoint);
         }
 
         // Initialize 7 helper matrices
@@ -256,10 +256,10 @@ public final class MatrixCalc {
         // Combine the resulting quarters into one matrix, and return
         double[][] ret = new double[matrixSize][matrixSize];
         for (int row = 0; row < halfpoint; row++) {
-            System.arraycopy(c11[row], 0, ret[row], 0, halfpoint);
-            System.arraycopy(c12[row], 0, ret[row], halfpoint, halfpoint);
-            System.arraycopy(c21[row], 0, ret[row + halfpoint], 0, halfpoint);
-            System.arraycopy(c22[row], 0, ret[row + halfpoint], halfpoint, halfpoint);
+            copyRow(c11[row], 0, ret[row], 0, halfpoint);
+            copyRow(c12[row], 0, ret[row], halfpoint, halfpoint);
+            copyRow(c21[row], 0, ret[row + halfpoint], 0, halfpoint);
+            copyRow(c22[row], 0, ret[row + halfpoint], halfpoint, halfpoint);
         }
         return ret;
     }
@@ -332,13 +332,22 @@ public final class MatrixCalc {
     private static double[][] increaseMatrixSize(double[][] matrix, int newSize) {
         double[][] ret = new double[newSize][newSize];
         for (int row = 0; row < matrix.length; row++) {
-            System.arraycopy(matrix[row], 0, ret[row], 0, matrix[0].length);
+            copyRow(matrix[row], 0, ret[row], 0, matrix[0].length);
         }
         return ret;
     }
 
+    private static void copyRow(double[] source, int startPositionSource, double[] target, int startPositionTarget, int length) {
+        int targetIndex = startPositionTarget;
+        int end = startPositionSource + length;
+        for (int sourceIndex = startPositionSource; sourceIndex < end; sourceIndex++) {
+            target[targetIndex] = source[sourceIndex];
+            targetIndex++;
+        }
+    }
+
     public static void setStrassenCutoff(int newCutoff) {
-        strassenCutoff = newCutoff;
+        strassenCutoff = newCutoff >= 3 ? newCutoff : strassenCutoff;
     }
 
     public static int getStrassenCutoff() {

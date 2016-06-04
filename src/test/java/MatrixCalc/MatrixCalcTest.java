@@ -126,4 +126,39 @@ public class MatrixCalcTest {
         MatrixCalc.multiply(twoByTwoMatrix, threeByTwoMatrix);
     }
 
+    @Test
+    public void multiplyFunctionsProperly() {
+        //Cutoff is set to 3 so both naive and Strassen methods will be tested
+        MatrixCalc.setStrassenCutoff(3);
+        double[][] result = MatrixCalc.multiply(matrixA, matrixA);
+        for (int row = 0; row < matrixA.length; row++) {
+            for (int column = 0; column < matrixA[0].length; column++) {
+                double resultWanted = 0;
+                int rowA = 0;
+                while (rowA < matrixA[0].length) {
+                    for (int columnB = 0; columnB < matrixA.length; columnB++) {
+                        resultWanted += (matrixA[row][rowA] * matrixA[columnB][column]);
+                        rowA++;
+                    }
+                }
+                assertEquals(resultWanted, result[row][column], 0.0001);
+            }
+        }
+        //Test that result matrix is reduced to original size
+        assertEquals(matrixA.length, result.length);
+        assertEquals(matrixA[0].length, result[0].length);
+    }
+
+    @Test
+    public void strassenCutoffSetWorksProperly() {
+        MatrixCalc.setStrassenCutoff(15);
+        assertEquals(15, MatrixCalc.getStrassenCutoff());
+    }
+
+    @Test
+    public void strassenCutoffIsNotSetToLessThanThree() {
+        MatrixCalc.setStrassenCutoff(2);
+        assertNotEquals(2, MatrixCalc.getStrassenCutoff());
+    }
+
 }
