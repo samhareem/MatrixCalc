@@ -78,7 +78,7 @@ public final class MatrixCalc {
         if (!isValidMultiplication(firstMatrix, secondMatrix)) {
             throw new IllegalArgumentException("Both matrices must be rectangular, and the row length of firstMatrix must equal the column length of secondMatrix");
         }
-        int longestSide = Math.max(firstMatrix.length, Math.max(firstMatrix[0].length, secondMatrix[0].length));
+        int longestSide = determineLongestSide(firstMatrix, secondMatrix);
         if (longestSide < strassenCutoff) {
             return multiplyNaive(firstMatrix, secondMatrix);
         } else {
@@ -319,6 +319,19 @@ public final class MatrixCalc {
             closest *= 2;
         }
         return closest;
+    }
+
+    private static int determineLongestSide(double[][] firstMatrix, double[][] secondMatrix) {
+        if (firstMatrix[0].length > secondMatrix[0].length) {
+            if (firstMatrix.length < firstMatrix[0].length) {
+                return firstMatrix[0].length;
+            }
+        } else {
+            if (firstMatrix.length < secondMatrix[0].length) {
+                return secondMatrix[0].length;
+            }
+        }
+        return firstMatrix.length;
     }
 
     /**
