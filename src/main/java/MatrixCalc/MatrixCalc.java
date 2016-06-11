@@ -86,6 +86,93 @@ public final class MatrixCalc {
         }
     }
 
+    /**
+     * Checks that the matrices are rectangular and that the row count of firstMatrix equals the column count of secondMatrix. If the
+     * matrices are valid, the longest side of the two matrices is determined. If the longest side is less than 1024
+     * values long, the matrices are multiplied using the naive method. For larger matrices, the Strassen method is used.
+     *
+     * @param matrix The matrix whose determinant is to be determined
+     * @return The determinant of the given matrix
+     */
+    public static double determinant(double[][] matrix) {
+        if (!isSquare(matrix)) {
+            throw new IllegalArgumentException("Matrix must be square");
+        }
+        int matrixSize = matrix.length;
+        // Base cases for matrices with length < 4
+        if (matrixSize == 1) {
+            return matrix[0][0];
+        } else if (matrixSize == 2) {
+            return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+        } else if (matrixSize == 3) {
+            return matrix[0][0]*matrix[1][1]*matrix[2][2] + matrix[0][1]*matrix[1][2]*matrix[2][0]
+                    + matrix[0][2]*matrix[1][0]*matrix[2][1] - matrix[0][2]*matrix[1][1]*matrix[2][0] -
+                    matrix[0][1]*matrix[1][0]*matrix[2][2] - matrix[0][0]*matrix[1][2]*matrix[2][1];
+        } else {
+            // LU Factorization using Doolittle method for matrices with length >= 4. Factorization result is stored in
+            // the parameter matrix to save space.
+            int determinantSign = 1;
+            // Main loop
+            for (int i = 0; i < matrixSize; i++) {
+                // Determine i:th row
+                for (int j = i; j < matrixSize; j++) {
+                    for (int k = 0; k <= i - 1; k++) {
+                        matrix[i][j] = matrix[i][j] - matrix[i][k] * matrix[k][j];
+                    }
+                }
+                // Determine i:th column
+                for (int j = i + 1; j < matrixSize; j++) {
+                    for (int k = 0; k <= i - 1; k++) {
+                        matrix[j][i] = matrix[j][i] - matrix[j][k] * matrix[k][i];
+                    }
+                    matrix[j][i] = matrix[j][i] / matrix[i][i];
+                    // If division by zero is undertaken and a cell of the array becomes NaN, the matrix is singular and
+                    // its determinant is 0
+                    if (Double.isNaN(matrix[j][i])) {
+                        return 0;
+                    }
+                }
+                // Partial pivoting is used to minimize the chance of division by zero.
+                for (int row = i + 1; row < matrixSize; row++) {
+                    int pivotRow = i;
+                    if (matrix[row][i] > matrix[i][i]) {
+                        pivotRow = row;
+                    }
+                    if (pivotRow != i) {
+                        double temp;
+                        for (int column = 0; column < matrixSize; column++) {
+                            temp = matrix[i][column];
+                            matrix[i][column] = matrix[pivotRow][column];
+                            matrix[pivotRow][column] = temp;
+                        }
+                        // In the case of a row swap, the sign of the determinant changes. The variable determinantSign
+                        // is used to store the sign of the given matrix' determinant.
+                        determinantSign *= -1;
+                    }
+                }
+            }
+            // Calculate and return determinant
+            double determinant = matrix[0][0];
+            for (int i = 1; i < matrixSize; i++) {
+                determinant *= matrix[i][i];
+            }
+            return determinant * determinantSign;
+        }
+    }
+
+    public static double[][] invertMatrix(double[][] matrix) {
+        if (!isSquare(matrix)) {
+            throw new IllegalArgumentException("Matrix must be square");
+        }
+        double[][] ret = new double[matrix.length][matrix.length];
+        if (matrix.length == 1) {
+            ret[0][0] = 1 / matrix[0][0];
+        } else {
+            ret = strassenInvert(matrix);
+        }
+        return ret;
+    }
+
 
     /**
      * Adds the values of the two matrices together.
@@ -227,7 +314,7 @@ public final class MatrixCalc {
         double[][] m6;
         double[][] m7;
 
-        // if current matrix is less than 1025 values long, calculate the helper matrices using naive multiplication,
+        // if current matrix is less than strassenCutoff, calculate the helper matrices using naive multiplication,
         // else call the Strassen method recursively
         if (matrixSize < strassenCutoff) {
             m1 = multiplyNaive(addMatrices(a11, a22), addMatrices(b11, b22));
@@ -264,6 +351,61 @@ public final class MatrixCalc {
         return ret;
     }
 
+    private static double[][] strassenInvert(double[][] matrix) {
+        int matrixSize = matrix.length;
+        int halfpoint = matrixSize / 2;
+
+        // Initialize 4 submatrices used in calculation
+        double[][] a11 = new double[halfpoint][halfpoint];
+        double[][] a12 = new double[halfpoint][halfpoint];
+        double[][] a21 = new double[halfpoint][halfpoint];
+        double[][] a22 = new double[halfpoint][halfpoint];
+
+        // Divide the matrix into the 4 submatrices, if matrix is larger than 4 x 4
+        for (int row = 0; row < halfpoint; row++) {
+            copyRow(matrix[row], 0, a11[row], 0, halfpoint);
+            copyRow(matrix[row], halfpoint, a12[row], 0, halfpoint);
+            copyRow(matrix[row + halfpoint], 0, a21[row], 0, halfpoint);
+            copyRow(matrix[row + halfpoint], halfpoint, a22[row], 0, halfpoint);
+        }
+
+        if (matrixSize <= 2) {
+            return naiveInvert(matrix);
+        } else {
+            // If current matrix size is 2, calculate the inverse of the matrix using blockwise inversion naively, else call
+            // the Strassen method recursively on the four quarters
+            a11 = strassenInvert(a11);
+
+            // Calculate the 4 quarters of the result matrix using blockwise invertion
+            double[][] c22 = strassenInvert(subtract(a22, multiplyStrassen(multiplyStrassen(a21, a11), a12)));
+            double[][] c11 = add(a11, multiplyStrassen(multiplyStrassen(multiplyStrassen(multiplyStrassen(a11, a12), c22), a21), a11));
+            double[][] c12 = multiplyStrassen(multiplyStrassen(scale(a11, -1), a12), c22);
+            double[][] c21 = multiplyStrassen(multiplyStrassen(scale(c22, -1), a21), a11);
+
+
+            // Combine the resulting quarters into one matrix, and return
+            double[][] ret = new double[matrixSize][matrixSize];
+            for (int row = 0; row < halfpoint; row++) {
+                copyRow(c11[row], 0, ret[row], 0, halfpoint);
+                copyRow(c12[row], 0, ret[row], halfpoint, halfpoint);
+                copyRow(c21[row], 0, ret[row + halfpoint], 0, halfpoint);
+                copyRow(c22[row], 0, ret[row + halfpoint], halfpoint, halfpoint);
+            }
+
+            return ret;
+        }
+    }
+
+    private static double[][] naiveInvert(double[][] matrix) {
+        double scalar = 1 / (matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]);
+        matrix[0][1] *= -1;
+        matrix[1][0] *= -1;
+        double temp = matrix[0][0];
+        matrix[0][0] = matrix[1][1];
+        matrix[1][1] = temp;
+        return scale(matrix, scalar);
+    }
+
     /**
      * Checks that the two matrices are of identical size.
      *
@@ -288,6 +430,13 @@ public final class MatrixCalc {
         return first[0].length == second.length;
     }
 
+    private static boolean isSquare(double[][] matrix) {
+        if (!isRectangular(matrix)) {
+            return false;
+        }
+        return matrix.length == matrix[0].length;
+    }
+
     /**
      * Checks that the supplied matrix is rectangular.
      *
@@ -295,7 +444,7 @@ public final class MatrixCalc {
      * @return True if matrix is rectangular, else false
      */
     private static boolean isRectangular(double[][] matrix) {
-        if (matrix.length == 0) {
+        if (matrix.length <= 0) {
             return false;
         }
         int rowLength = matrix[0].length;
