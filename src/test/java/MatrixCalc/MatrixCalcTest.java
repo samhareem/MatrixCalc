@@ -1,5 +1,6 @@
 package MatrixCalc;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -161,4 +162,31 @@ public class MatrixCalcTest {
         assertNotEquals(2, MatrixCalc.getStrassenCutoff());
     }
 
+    @Test
+    public void determinanThrowsExceptionWithJaggedMatrix() {
+        double[][] invalidMatrix = {{0,1,2}, {0,1,2,3}, {0,1,2}};
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.determinant(invalidMatrix);
+    }
+
+    @Test
+    public void determinantThrowsExceptionWithEmptyMatrix() {
+        double[][] emptyMatrix = new double[0][0];
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.determinant(emptyMatrix);
+    }
+
+    @Test
+    public void determinantThrowsExceptionWithRectangularMatrix() {
+        double[][] threeByTwoMatrix = new double[3][2];
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.determinant(threeByTwoMatrix);
+    }
+
+    @Test
+    public void determinantReturnsCorrectResult() {
+        double[][] test = {{1,2,0},{2,1,0},{0,0,1}};
+        double result = MatrixCalc.determinant(test);
+        assertEquals(-3, result, 0.00001);
+    }
 }
