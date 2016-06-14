@@ -361,7 +361,7 @@ public final class MatrixCalc {
         double[][] a21 = new double[halfpoint][halfpoint];
         double[][] a22 = new double[halfpoint][halfpoint];
 
-        // Divide the matrix into the 4 submatrices, if matrix is larger than 4 x 4
+        // Divide the matrix into the 4 submatrices
         for (int row = 0; row < halfpoint; row++) {
             copyRow(matrix[row], 0, a11[row], 0, halfpoint);
             copyRow(matrix[row], halfpoint, a12[row], 0, halfpoint);
@@ -369,11 +369,12 @@ public final class MatrixCalc {
             copyRow(matrix[row + halfpoint], halfpoint, a22[row], 0, halfpoint);
         }
 
+        // If current matrix size is 2, calculate the inverse of the matrix using blockwise inversion naively, else call
+        // the Strassen method recursively on the top left quarter and calculate the other quarters using the result
         if (matrixSize <= 2) {
             return naiveInvert(matrix);
         } else {
-            // If current matrix size is 2, calculate the inverse of the matrix using blockwise inversion naively, else call
-            // the Strassen method recursively on the four quarters
+
             a11 = strassenInvert(a11);
 
             // Calculate the 4 quarters of the result matrix using blockwise invertion

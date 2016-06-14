@@ -98,9 +98,9 @@ public class MatrixCalcTest {
     public void scaleFunctionsProperly() {
         double scalar = numberGenerator.nextDouble();
         double[][] result = MatrixCalc.scale(matrixA, scalar);
-        for (int y = 0; y < matrixA.length; y++) {
-            for (int x = 0; x < matrixA[0].length; x++) {
-                assertEquals(matrixA[y][x] * scalar, result[y][x], 0.001);
+        for (int row = 0; row < matrixA.length; row++) {
+            for (int column = 0; column < matrixA[0].length; column++) {
+                assertEquals(matrixA[row][column] * scalar, result[row][column], 0.001);
             }
         }
     }
@@ -188,5 +188,39 @@ public class MatrixCalcTest {
         double[][] test = {{1,2,0},{2,1,0},{0,0,1}};
         double result = MatrixCalc.determinant(test);
         assertEquals(-3, result, 0.00001);
+    }
+
+    @Test
+    public void invertMatrixThrowsExceptionWithJaggedMatrix() {
+        double[][] invalidMatrix = {{0,1,2}, {0,1,2,3}, {0,1,2}};
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.invertMatrix(invalidMatrix);
+    }
+
+    @Test
+    public void invertMatrixThrowsExceptionWithEmptyMatrix() {
+        double[][] emptyMatrix = new double[0][0];
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.invertMatrix(emptyMatrix);
+    }
+
+    @Test
+    public void invertMatrixThrowsExceptionWithRectangularMatrix() {
+        double[][] threeByTwoMatrix = new double[3][2];
+        exception.expect(IllegalArgumentException.class);
+        MatrixCalc.invertMatrix(threeByTwoMatrix);
+    }
+
+    @Test
+    public void invertMatrixReturnsCorrectResult() {
+        double[][] testMatrix = {{2,3,1,5}, {1,0,3,1}, {0,2,-3,2}, {0,2,3,1}};
+        //Excepted result, as per Wolfram Alpha
+        double[][] expectedMatrix = {{18,-35,-28,1},{9,-18,-14,1},{-2,4,3,0},{-12,24,19,-1}};
+        double[][] resultMatrix = MatrixCalc.invertMatrix(testMatrix);
+        for (int row = 0; row < testMatrix.length; row++) {
+            for (int column = 0; column < testMatrix[0].length; column++) {
+                assertEquals(expectedMatrix[row][column], resultMatrix[row][column], 0.001);
+            }
+        }
     }
 }
