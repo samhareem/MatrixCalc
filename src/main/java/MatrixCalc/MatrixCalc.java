@@ -15,6 +15,7 @@ public final class MatrixCalc {
     private MatrixCalc() {
         // Utility class, constructor not called
     }
+
     /**
      * Checks that the two matrices have identical size and returns the result of the addition.
      *
@@ -160,6 +161,13 @@ public final class MatrixCalc {
         }
     }
 
+    /**
+     *Checks that the given matrix is square and calculates it's inverse matrix. Note that the method does not check
+     * whether or not the give matrix is invertible, so the result matrix may consist of NaN values.
+     *
+     * @param matrix The matrix to be inverted
+     * @result The inverse of the given matrix
+     */
     public static double[][] invertMatrix(double[][] matrix) {
         if (!isSquare(matrix)) {
             throw new IllegalArgumentException("Matrix must be square");
@@ -351,9 +359,22 @@ public final class MatrixCalc {
         return ret;
     }
 
+    /**
+     * Inverts the given matrix using blockwise invertion and the Strassen method for matrix multiplication. Switches to
+     * the naive inversion method for matrices smaller than the 2x2 values.
+     *
+     * @param matrix Matrix to be inverted
+     * @return Result of inversion
+     */
     private static double[][] strassenInvert(double[][] matrix) {
         int matrixSize = matrix.length;
         int halfpoint = matrixSize / 2;
+
+        // If current matrix size is 2, calculate the inverse of the matrix using blockwise inversion naively, else call
+        // the Strassen method recursively on the top left quarter and calculate the other quarters using the result
+        if (matrixSize <= 2) {
+            return naiveInvert(matrix);
+        }
 
         // Initialize 4 submatrices used in calculation
         double[][] a11 = new double[halfpoint][halfpoint];
@@ -369,34 +390,33 @@ public final class MatrixCalc {
             copyRow(matrix[row + halfpoint], halfpoint, a22[row], 0, halfpoint);
         }
 
-        // If current matrix size is 2, calculate the inverse of the matrix using blockwise inversion naively, else call
-        // the Strassen method recursively on the top left quarter and calculate the other quarters using the result
-        if (matrixSize <= 2) {
-            return naiveInvert(matrix);
-        } else {
+        a11 = strassenInvert(a11);
 
-            a11 = strassenInvert(a11);
-
-            // Calculate the 4 quarters of the result matrix using blockwise invertion
-            double[][] c22 = strassenInvert(subtract(a22, multiplyStrassen(multiplyStrassen(a21, a11), a12)));
-            double[][] c11 = add(a11, multiplyStrassen(multiplyStrassen(multiplyStrassen(multiplyStrassen(a11, a12), c22), a21), a11));
-            double[][] c12 = multiplyStrassen(multiplyStrassen(scale(a11, -1), a12), c22);
-            double[][] c21 = multiplyStrassen(multiplyStrassen(scale(c22, -1), a21), a11);
+        // Calculate the 4 quarters of the result matrix using blockwise invertion
+        double[][] c22 = strassenInvert(subtract(a22, multiplyStrassen(multiplyStrassen(a21, a11), a12)));
+        double[][] c11 = add(a11, multiplyStrassen(multiplyStrassen(multiplyStrassen(multiplyStrassen(a11, a12), c22), a21), a11));
+        double[][] c12 = multiplyStrassen(multiplyStrassen(scale(a11, -1), a12), c22);
+        double[][] c21 = multiplyStrassen(multiplyStrassen(scale(c22, -1), a21), a11);
 
 
-            // Combine the resulting quarters into one matrix, and return
-            double[][] ret = new double[matrixSize][matrixSize];
-            for (int row = 0; row < halfpoint; row++) {
-                copyRow(c11[row], 0, ret[row], 0, halfpoint);
-                copyRow(c12[row], 0, ret[row], halfpoint, halfpoint);
-                copyRow(c21[row], 0, ret[row + halfpoint], 0, halfpoint);
-                copyRow(c22[row], 0, ret[row + halfpoint], halfpoint, halfpoint);
-            }
-
-            return ret;
+        // Combine the resulting quarters into one matrix, and return
+        double[][] ret = new double[matrixSize][matrixSize];
+        for (int row = 0; row < halfpoint; row++) {
+            copyRow(c11[row], 0, ret[row], 0, halfpoint);
+            copyRow(c12[row], 0, ret[row], halfpoint, halfpoint);
+            copyRow(c21[row], 0, ret[row + halfpoint], 0, halfpoint);
+            copyRow(c22[row], 0, ret[row + halfpoint], halfpoint, halfpoint);
         }
+
+        return ret;
     }
 
+    /**
+     * Naive matrix inversion method for 2x2 matrices
+     *
+     * @param matrix Matrix to be inverted
+     * @return Result of inversion
+     */
     private static double[][] naiveInvert(double[][] matrix) {
         double scalar = 1 / (matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]);
         matrix[0][1] *= -1;
@@ -424,6 +444,14 @@ public final class MatrixCalc {
         return true;
     }
 
+    /**
+     * Checks that the matrices are rectangulare and that the row count of the first matrix equals the column count
+     * of the second matrix.
+     *
+     * @param first First matrix to be checked
+     * @param second Second matrix to be checked
+     * @return True if valid, else false
+     */
     private static boolean isValidMultiplication(double[][] first, double[][] second) {
         if (!isRectangular(first) || !isRectangular(second)) {
             return false;
@@ -431,6 +459,12 @@ public final class MatrixCalc {
         return first[0].length == second.length;
     }
 
+    /**
+     * Checks that the given matrix is square.
+     *
+     * @param matrix Matrix to be checked
+     * @return True if square, else false
+     */
     private static boolean isSquare(double[][] matrix) {
         if (!isRectangular(matrix)) {
             return false;
@@ -471,6 +505,13 @@ public final class MatrixCalc {
         return closest;
     }
 
+    /**
+     * Determines the longest side present in the two matrices.
+     *
+     * @param firstMatrix First matrix to be checked
+     * @param secondMatrix Second matrix to be checked
+     * @return The length of the longest side
+     */
     private static int determineLongestSide(double[][] firstMatrix, double[][] secondMatrix) {
         if (firstMatrix[0].length > secondMatrix[0].length) {
             if (firstMatrix.length < firstMatrix[0].length) {
@@ -500,6 +541,15 @@ public final class MatrixCalc {
         return ret;
     }
 
+    /**
+     * Copies a row or part of the row from the source matrix to the target matrix.
+     *
+     * @param source Matrix to be copied from
+     * @param startPositionSource The position to copy from
+     * @param target Matrix to be copy to
+     * @param startPositionTarget The first position to copy to
+     * @param length The number of values to copy
+     */
     private static void copyRow(double[] source, int startPositionSource, double[] target, int startPositionTarget, int length) {
         int targetIndex = startPositionTarget;
         int end = startPositionSource + length;
