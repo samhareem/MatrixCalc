@@ -92,44 +92,44 @@ public final class MatrixCalc {
      * matrices are valid, the longest side of the two matrices is determined. If the longest side is less than 1024
      * values long, the matrices are multiplied using the naive method. For larger matrices, the Strassen method is used.
      *
-     * @param matrix The matrix whose determinant is to be determined
+     * @param matrixLU The matrix whose determinant is to be determined
      * @return The determinant of the given matrix
      */
     public static double determinant(double[][] matrix) {
         if (!isSquare(matrix)) {
             throw new IllegalArgumentException("Matrix must be square");
         }
-        int matrixSize = matrix.length;
+        double[][] matrixLU = matrix;
+        int matrixSize = matrixLU.length;
         // Base cases for matrices with length < 4
         if (matrixSize == 1) {
-            return matrix[0][0];
+            return matrixLU[0][0];
         } else if (matrixSize == 2) {
-            return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+            return matrixLU[0][0] * matrixLU[1][1] - matrixLU[0][1] * matrixLU[1][0];
         } else if (matrixSize == 3) {
-            return matrix[0][0]*matrix[1][1]*matrix[2][2] + matrix[0][1]*matrix[1][2]*matrix[2][0]
-                    + matrix[0][2]*matrix[1][0]*matrix[2][1] - matrix[0][2]*matrix[1][1]*matrix[2][0] -
-                    matrix[0][1]*matrix[1][0]*matrix[2][2] - matrix[0][0]*matrix[1][2]*matrix[2][1];
+            return matrixLU[0][0]*matrixLU[1][1]*matrixLU[2][2] + matrixLU[0][1]*matrixLU[1][2]*matrixLU[2][0]
+                    + matrixLU[0][2]*matrixLU[1][0]*matrixLU[2][1] - matrixLU[0][2]*matrixLU[1][1]*matrixLU[2][0] -
+                    matrixLU[0][1]*matrixLU[1][0]*matrixLU[2][2] - matrixLU[0][0]*matrixLU[1][2]*matrixLU[2][1];
         } else {
-            // LU Factorization using Doolittle method for matrices with length >= 4. Factorization result is stored in
-            // the parameter matrix to save space.
+            // LU Factorization using Doolittle method for matrices with length >= 4.
             int determinantSign = 1;
             // Main loop
             for (int i = 0; i < matrixSize; i++) {
                 // Determine i:th row
                 for (int j = i; j < matrixSize; j++) {
                     for (int k = 0; k <= i - 1; k++) {
-                        matrix[i][j] = matrix[i][j] - matrix[i][k] * matrix[k][j];
+                        matrixLU[i][j] = matrix[i][j] - matrix[i][k] * matrix[k][j];
                     }
                 }
                 // Determine i:th column
                 for (int j = i + 1; j < matrixSize; j++) {
                     for (int k = 0; k <= i - 1; k++) {
-                        matrix[j][i] = matrix[j][i] - matrix[j][k] * matrix[k][i];
+                        matrixLU[j][i] = matrix[j][i] - matrix[j][k] * matrix[k][i];
                     }
-                    matrix[j][i] = matrix[j][i] / matrix[i][i];
+                    matrixLU[j][i] = matrix[j][i] / matrix[i][i];
                     // If division by zero is undertaken and a cell of the array becomes NaN, the matrix is singular and
                     // its determinant is 0
-                    if (Double.isNaN(matrix[j][i])) {
+                    if (Double.isNaN(matrixLU[j][i])) {
                         return 0;
                     }
                 }
@@ -140,11 +140,9 @@ public final class MatrixCalc {
                         pivotRow = row;
                     }
                     if (pivotRow != i) {
-                        double temp;
                         for (int column = 0; column < matrixSize; column++) {
-                            temp = matrix[i][column];
-                            matrix[i][column] = matrix[pivotRow][column];
-                            matrix[pivotRow][column] = temp;
+                            matrixLU[i][column] = matrix[pivotRow][column];
+                            matrixLU[pivotRow][column] = matrix[i][column];
                         }
                         // In the case of a row swap, the sign of the determinant changes. The variable determinantSign
                         // is used to store the sign of the given matrix' determinant.
@@ -153,9 +151,9 @@ public final class MatrixCalc {
                 }
             }
             // Calculate and return determinant
-            double determinant = matrix[0][0];
+            double determinant = matrixLU[0][0];
             for (int i = 1; i < matrixSize; i++) {
-                determinant *= matrix[i][i];
+                determinant *= matrixLU[i][i];
             }
             return determinant * determinantSign;
         }
