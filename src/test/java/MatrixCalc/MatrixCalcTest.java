@@ -207,9 +207,9 @@ public class MatrixCalcTest {
 
     @Test
     public void determinantReturnsCorrectResult() {
-        double[][] test = {{1,2,0},{2,1,0},{0,0,1}};
+        double[][] test = {{2,3,1,5},{1,0,3,1},{0,2,-3,2},{0,2,3,1}};
         double result = MatrixCalc.determinant(test);
-        assertEquals(-3, result, 0.00001);
+        assertEquals(1, result, 0.00001);
     }
 
     @Test

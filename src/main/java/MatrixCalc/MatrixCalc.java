@@ -92,7 +92,7 @@ public final class MatrixCalc {
      * matrices are valid, the longest side of the two matrices is determined. If the longest side is less than 1024
      * values long, the matrices are multiplied using the naive method. For larger matrices, the Strassen method is used.
      *
-     * @param matrixLU The matrix whose determinant is to be determined
+     * @param matrix The matrix whose determinant is to be determined
      * @return The determinant of the given matrix
      */
     public static double determinant(double[][] matrix) {
@@ -107,14 +107,32 @@ public final class MatrixCalc {
         } else if (matrixSize == 2) {
             return matrixLU[0][0] * matrixLU[1][1] - matrixLU[0][1] * matrixLU[1][0];
         } else if (matrixSize == 3) {
-            return matrixLU[0][0]*matrixLU[1][1]*matrixLU[2][2] + matrixLU[0][1]*matrixLU[1][2]*matrixLU[2][0]
-                    + matrixLU[0][2]*matrixLU[1][0]*matrixLU[2][1] - matrixLU[0][2]*matrixLU[1][1]*matrixLU[2][0] -
-                    matrixLU[0][1]*matrixLU[1][0]*matrixLU[2][2] - matrixLU[0][0]*matrixLU[1][2]*matrixLU[2][1];
+            return matrixLU[0][0] * matrixLU[1][1] * matrixLU[2][2] + matrixLU[0][1] * matrixLU[1][2] * matrixLU[2][0]
+                    + matrixLU[0][2] * matrixLU[1][0] * matrixLU[2][1] - matrixLU[0][2] * matrixLU[1][1] * matrixLU[2][0] -
+                    matrixLU[0][1] * matrixLU[1][0] * matrixLU[2][2] - matrixLU[0][0] * matrixLU[1][2] * matrixLU[2][1];
         } else {
             // LU Factorization using Doolittle method for matrices with length >= 4.
             int determinantSign = 1;
             // Main loop
             for (int i = 0; i < matrixSize; i++) {
+                // Partial pivoting is used to minimize the chance of division by zero. CURRENTLY NOT WORKING
+                int pivotRow = i;
+                for (int row = i + 1; row < matrixSize; row++) {
+                    if (matrix[row][i] > matrix[i][i]) {
+                        pivotRow = row;
+                    }
+                }
+                //Swap rows if necessary
+                if (pivotRow != i) {
+                    for (int column = 0; column < matrixSize; column++) {
+                        matrixLU[i][column] = matrix[pivotRow][column];
+                        matrixLU[pivotRow][column] = matrix[i][column];
+                    }
+                    // In the case of a row swap, the sign of the determinant changes. The variable determinantSign
+                    // is used to store the sign of the given matrix' determinant.
+                    determinantSign *= -1;
+                }
+
                 // Determine i:th row
                 for (int j = i; j < matrixSize; j++) {
                     for (int k = 0; k <= i - 1; k++) {
@@ -131,22 +149,6 @@ public final class MatrixCalc {
                     // its determinant is 0
                     if (Double.isNaN(matrixLU[j][i])) {
                         return 0;
-                    }
-                }
-                // Partial pivoting is used to minimize the chance of division by zero.
-                for (int row = i + 1; row < matrixSize; row++) {
-                    int pivotRow = i;
-                    if (matrix[row][i] > matrix[i][i]) {
-                        pivotRow = row;
-                    }
-                    if (pivotRow != i) {
-                        for (int column = 0; column < matrixSize; column++) {
-                            matrixLU[i][column] = matrix[pivotRow][column];
-                            matrixLU[pivotRow][column] = matrix[i][column];
-                        }
-                        // In the case of a row swap, the sign of the determinant changes. The variable determinantSign
-                        // is used to store the sign of the given matrix' determinant.
-                        determinantSign *= -1;
                     }
                 }
             }
