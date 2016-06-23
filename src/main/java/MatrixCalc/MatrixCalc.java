@@ -366,9 +366,15 @@ public final class MatrixCalc {
      * @param matrix Matrix to be inverted
      * @return Result of inversion
      */
+    /**
+     * Inverts the given matrix using blockwise invertion and the Strassen method for matrix multiplication. Switches to
+     * the naive inversion method for matrices smaller than the 2x2 values.
+     *
+     * @param matrix Matrix to be inverted
+     * @return Result of inversion
+     */
     private static double[][] strassenInvert(double[][] matrix) {
         int matrixSize = matrix.length;
-        int halfpoint = matrixSize / 2;
 
         // If current matrix size is 2, calculate the inverse of the matrix using blockwise inversion naively, else call
         // the Strassen method recursively on the top left quarter and calculate the other quarters using the result
@@ -376,56 +382,67 @@ public final class MatrixCalc {
             return naiveInvert(matrix);
         }
 
+        int halfpoint = matrixSize / 2;
+
         // Initialize 4 submatrices used in calculation
-        double[][] a11 = new double[halfpoint][halfpoint];
-        double[][] a12 = new double[halfpoint][halfpoint];
-        double[][] a21 = new double[halfpoint][halfpoint];
+        double[][] a11 = new double[matrixSize-halfpoint][matrixSize-halfpoint];
+        double[][] a12 = new double[matrixSize-halfpoint][halfpoint];
+        double[][] a21 = new double[halfpoint][matrixSize-halfpoint];
         double[][] a22 = new double[halfpoint][halfpoint];
 
+
+
         // Divide the matrix into the 4 submatrices
-        for (int row = 0; row < halfpoint; row++) {
-            copyRow(matrix[row], 0, a11[row], 0, halfpoint);
-            copyRow(matrix[row], halfpoint, a12[row], 0, halfpoint);
-            copyRow(matrix[row + halfpoint], 0, a21[row], 0, halfpoint);
-            copyRow(matrix[row + halfpoint], halfpoint, a22[row], 0, halfpoint);
+        for (int row = 0; row < matrixSize - halfpoint; row++) {
+            copyRow(matrix[row], 0, a11[row], 0, matrixSize-halfpoint);
+            copyRow(matrix[row], matrixSize-halfpoint, a12[row], 0, halfpoint);
+        }
+        for (int row = matrixSize-halfpoint; row < matrixSize; row++) {
+            copyRow(matrix[row], 0, a21[row - (matrixSize-halfpoint)], 0, matrixSize-halfpoint);
+            copyRow(matrix[row], matrixSize-halfpoint, a22[row - (matrixSize-halfpoint)], 0, halfpoint);
         }
 
-        a11 = strassenInvert(a11);
+        a22 = strassenInvert(a22);
 
         // Calculate the 4 quarters of the result matrix using blockwise invertion
-        double[][] c22 = strassenInvert(subtract(a22, multiplyStrassen(multiplyStrassen(a21, a11), a12)));
-        double[][] c11 = add(a11, multiplyStrassen(multiplyStrassen(multiplyStrassen(multiplyStrassen(a11, a12), c22), a21), a11));
-        double[][] c12 = multiplyStrassen(multiplyStrassen(scale(a11, -1), a12), c22);
-        double[][] c21 = multiplyStrassen(multiplyStrassen(scale(c22, -1), a21), a11);
-
+        double[][] c11 = invertMatrix(subtract(a11, multiply(multiply(a12, a22), a21)));
+        double[][] c22 = add(a22, multiply(multiply(multiply(multiply(a22, a21), c11), a12), a22));
+        double[][] c12 = multiply(multiply(scale(c11, -1), a12), a22);
+        double[][] c21 = multiply(multiply(scale(a22, -1), a21), c11);
 
         // Combine the resulting quarters into one matrix, and return
         double[][] ret = new double[matrixSize][matrixSize];
-        for (int row = 0; row < halfpoint; row++) {
-            copyRow(c11[row], 0, ret[row], 0, halfpoint);
-            copyRow(c12[row], 0, ret[row], halfpoint, halfpoint);
-            copyRow(c21[row], 0, ret[row + halfpoint], 0, halfpoint);
-            copyRow(c22[row], 0, ret[row + halfpoint], halfpoint, halfpoint);
+        for (int row = 0; row < matrixSize - halfpoint; row++) {
+            copyRow(c11[row], 0, ret[row], 0, matrixSize-halfpoint);
+            copyRow(c12[row], 0, ret[row], matrixSize-halfpoint, halfpoint);
         }
-
+        for (int row = matrixSize-halfpoint; row < matrixSize; row++) {
+            copyRow(c21[row - (matrixSize-halfpoint)], 0, ret[row], 0, matrixSize-halfpoint);
+            copyRow(c22[row - (matrixSize-halfpoint)], 0, ret[row], matrixSize-halfpoint, halfpoint);
+        }
         return ret;
     }
 
     /**
-     * Naive matrix inversion method for 2x2 matrices
+     * Naive matrix inversion method for 2x2 and smaller matrices
      *
      * @param matrix Matrix to be inverted
      * @return Result of inversion
      */
     private static double[][] naiveInvert(double[][] matrix) {
-        double scalar = 1 / (matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]);
-        matrix[0][1] *= -1;
-        matrix[1][0] *= -1;
-        double temp = matrix[0][0];
-        matrix[0][0] = matrix[1][1];
-        matrix[1][1] = temp;
-        return scale(matrix, scalar);
-    }
+        if (matrix.length == 1) {
+            matrix[0][0] = 1/matrix[0][0];
+            return matrix;
+        } else {
+            double scalar = 1 / (matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]);
+            matrix[0][1] *= -1;
+            matrix[1][0] *= -1;
+            double temp = matrix[0][0];
+            matrix[0][0] = matrix[1][1];
+            matrix[1][1] = temp;
+            return scale(matrix, scalar);
+        }
+    } 
 
     /**
      * Checks that the two matrices are of identical size.
