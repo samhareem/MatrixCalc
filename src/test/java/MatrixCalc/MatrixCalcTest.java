@@ -1,6 +1,5 @@
 package MatrixCalc;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -216,21 +215,21 @@ public class MatrixCalcTest {
     public void invertMatrixThrowsExceptionWithJaggedMatrix() {
         double[][] invalidMatrix = {{0,1,2}, {0,1,2,3}, {0,1,2}};
         exception.expect(IllegalArgumentException.class);
-        MatrixCalc.invertMatrix(invalidMatrix);
+        MatrixCalc.invert(invalidMatrix);
     }
 
     @Test
     public void invertMatrixThrowsExceptionWithEmptyMatrix() {
         double[][] emptyMatrix = new double[0][0];
         exception.expect(IllegalArgumentException.class);
-        MatrixCalc.invertMatrix(emptyMatrix);
+        MatrixCalc.invert(emptyMatrix);
     }
 
     @Test
     public void invertMatrixThrowsExceptionWithRectangularMatrix() {
         double[][] threeByTwoMatrix = new double[3][2];
         exception.expect(IllegalArgumentException.class);
-        MatrixCalc.invertMatrix(threeByTwoMatrix);
+        MatrixCalc.invert(threeByTwoMatrix);
     }
 
     @Test
@@ -238,7 +237,7 @@ public class MatrixCalcTest {
         double[][] testMatrix = {{2,3,1,5}, {1,0,3,1}, {0,2,-3,2}, {0,2,3,1}};
         //Excepted result, as per Wolfram Alpha
         double[][] expectedMatrix = {{18,-35,-28,1},{9,-18,-14,1},{-2,4,3,0},{-12,24,19,-1}};
-        double[][] resultMatrix = MatrixCalc.invertMatrix(testMatrix);
+        double[][] resultMatrix = MatrixCalc.invert(testMatrix);
         for (int row = 0; row < testMatrix.length; row++) {
             for (int column = 0; column < testMatrix[0].length; column++) {
                 assertEquals(expectedMatrix[row][column], resultMatrix[row][column], 0.001);
