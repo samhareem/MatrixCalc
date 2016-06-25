@@ -99,8 +99,11 @@ public final class MatrixCalc {
         if (!isSquare(matrix)) {
             throw new IllegalArgumentException("Matrix must be square");
         }
-        double[][] matrixLU = matrix;
-        int matrixSize = matrixLU.length;
+        int matrixSize = matrix.length;
+        double[][] matrixLU = new double[matrixSize][matrixSize];
+        for (int row = 0; row < matrixSize; row++) {
+            copyRow(matrix[row], 0, matrixLU[row], 0, matrixSize);
+        }
         // Base cases for matrices with length < 4
         if (matrixSize == 1) {
             return matrixLU[0][0];
@@ -118,15 +121,16 @@ public final class MatrixCalc {
                 // Partial pivoting is used to minimize the chance of division by zero. CURRENTLY NOT WORKING
                 int pivotRow = i;
                 for (int row = i + 1; row < matrixSize; row++) {
-                    if (matrix[row][i] > matrix[i][i]) {
+                    if (matrixLU[row][i] > matrixLU[i][i]) {
                         pivotRow = row;
                     }
                 }
                 //Swap rows if necessary
                 if (pivotRow != i) {
                     for (int column = 0; column < matrixSize; column++) {
-                        matrixLU[i][column] = matrix[pivotRow][column];
-                        matrixLU[pivotRow][column] = matrix[i][column];
+                        double temp = matrixLU[pivotRow][column];
+                        matrixLU[pivotRow][column] = matrixLU[i][column];
+                        matrixLU[i][column] = temp;
                     }
                     // In the case of a row swap, the sign of the determinant changes. The variable determinantSign
                     // is used to store the sign of the given matrix' determinant.
@@ -136,19 +140,19 @@ public final class MatrixCalc {
                 // Determine i:th row
                 for (int j = i; j < matrixSize; j++) {
                     for (int k = 0; k <= i - 1; k++) {
-                        matrixLU[i][j] = matrix[i][j] - matrix[i][k] * matrix[k][j];
+                        matrixLU[i][j] = matrixLU[i][j] - matrixLU[i][k] * matrixLU[k][j];
                     }
                 }
                 // Determine i:th column
                 for (int j = i + 1; j < matrixSize; j++) {
                     for (int k = 0; k <= i - 1; k++) {
-                        matrixLU[j][i] = matrix[j][i] - matrix[j][k] * matrix[k][i];
+                        matrixLU[j][i] = matrixLU[j][i] - matrixLU[j][k] * matrixLU[k][i];
                     }
-                    matrixLU[j][i] = matrix[j][i] / matrix[i][i];
+                    matrixLU[j][i] = matrixLU[j][i] / matrixLU[i][i];
                     // If division by zero is undertaken and a cell of the array becomes NaN, the matrix is singular and
                     // its determinant is 0
                     if (Double.isNaN(matrixLU[j][i])) {
-                        return 0;
+                        return Double.NaN;
                     }
                 }
             }
@@ -168,7 +172,7 @@ public final class MatrixCalc {
      * @param matrix The matrix to be inverted
      * @result The inverse of the given matrix
      */
-    public static double[][] invertMatrix(double[][] matrix) {
+    public static double[][] invert(double[][] matrix) {
         if (!isSquare(matrix)) {
             throw new IllegalArgumentException("Matrix must be square");
         }
@@ -405,7 +409,7 @@ public final class MatrixCalc {
         a22 = strassenInvert(a22);
 
         // Calculate the 4 quarters of the result matrix using blockwise invertion
-        double[][] c11 = invertMatrix(subtract(a11, multiply(multiply(a12, a22), a21)));
+        double[][] c11 = invert(subtract(a11, multiply(multiply(a12, a22), a21)));
         double[][] c22 = add(a22, multiply(multiply(multiply(multiply(a22, a21), c11), a12), a22));
         double[][] c12 = multiply(multiply(scale(c11, -1), a12), a22);
         double[][] c21 = multiply(multiply(scale(a22, -1), a21), c11);
