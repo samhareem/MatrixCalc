@@ -118,7 +118,7 @@ public final class MatrixCalc {
             int determinantSign = 1;
             // Main loop
             for (int i = 0; i < matrixSize; i++) {
-                // Partial pivoting is used to minimize the chance of division by zero. CURRENTLY NOT WORKING
+                // Partial pivoting is used to minimize the chance of division by zero.
                 int pivotRow = i;
                 for (int row = i + 1; row < matrixSize; row++) {
                     if (matrixLU[row][i] > matrixLU[i][i]) {
