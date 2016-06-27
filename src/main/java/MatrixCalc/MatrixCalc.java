@@ -7,8 +7,8 @@ package MatrixCalc;
  */
 public final class MatrixCalc {
     /**
-     * Matrices where the longest side is less than the cutoff value will be multiplied using the naive method. For larger
-     * matrices, the Strassen method will be used. The value must be at least 3.
+     * Matrices where the longest side is less than the cutoff value will be multiplied using the naive method. For
+     * larger matrices, the Strassen method will be used. The value must be at least 3.
      */
     private static int strassenCutoff = 257;
 
@@ -67,17 +67,19 @@ public final class MatrixCalc {
     }
 
     /**
-     * Checks that the matrices are rectangular and that the row count of firstMatrix equals the column count of secondMatrix. If the
-     * matrices are valid, the longest side of the two matrices is determined. If the longest side is less than the strassenCutoff
-     * variable, the matrices are multiplied using the naive method. For larger matrices, the Strassen method is used.
+     * Checks that the matrices are rectangular and that the row count of firstMatrix equals the column count of
+     * secondMatrix. If the matrices are valid, the longest side of the two matrices is determined.
+     * If the longest side is less than the strassenCutoff variable, the matrices are multiplied using
+     * the naive method. For larger matrices, the Strassen method is used.
      *
-     * @param firstMatrix First matrix used in the multiplication
+     * @param firstMatrix  First matrix used in the multiplication
      * @param secondMatrix Second matrix used in the multiplication
      * @return Returns the result of the multiplication as a 2-dimensional double array
      */
     public static double[][] multiply(double[][] firstMatrix, double[][] secondMatrix) {
         if (!isValidMultiplication(firstMatrix, secondMatrix)) {
-            throw new IllegalArgumentException("Both matrices must be rectangular, and the row length of firstMatrix must equal the column length of secondMatrix");
+            throw new IllegalArgumentException("Both matrices must be rectangular, and the row length of firstMatrix " +
+                    "must equal the column length of secondMatrix");
         }
         int longestSide = determineLongestSide(firstMatrix, secondMatrix);
         if (longestSide < strassenCutoff) {
@@ -88,9 +90,10 @@ public final class MatrixCalc {
     }
 
     /**
-     * Checks that the matrices are rectangular and that the row count of firstMatrix equals the column count of secondMatrix. If the
-     * matrices are valid, the longest side of the two matrices is determined. If the longest side is less than 1024
-     * values long, the matrices are multiplied using the naive method. For larger matrices, the Strassen method is used.
+     * Checks that the matrices are rectangular and that the row count of firstMatrix equals the column count of
+     * secondMatrix. If the matrices are valid, the longest side of the two matrices is determined. If the longest
+     * side is less than 1024 values long, the matrices are multiplied using the naive method. For larger matrices,
+     * the Strassen method is used.
      *
      * @param matrix The matrix whose determinant is to be determined
      * @return The determinant of the given matrix
@@ -166,7 +169,7 @@ public final class MatrixCalc {
     }
 
     /**
-     *Checks that the given matrix is square and calculates it's inverse matrix. Note that the method does not check
+     * Checks that the given matrix is square and calculates it's inverse matrix. Note that the method does not check
      * whether or not the give matrix is invertible, so the result matrix may consist of NaN values.
      *
      * @param matrix The matrix to be inverted
@@ -189,9 +192,8 @@ public final class MatrixCalc {
     /**
      * Adds the values of the two matrices together.
      *
-     * @param firstMatrix First matrix to be added
+     * @param firstMatrix  First matrix to be added
      * @param secondMatrix Second matrix to be added
-     *
      * @return Result of addition
      */
     private static double[][] addMatrices(double[][] firstMatrix, double[][] secondMatrix) {
@@ -207,9 +209,8 @@ public final class MatrixCalc {
     /**
      * Subtract the values of the second matrix from the first.
      *
-     * @param firstMatrix Matrix to be subtracted from
+     * @param firstMatrix  Matrix to be subtracted from
      * @param secondMatrix Matrix to subtract with
-     *
      * @return Result of subtraction
      */
     private static double[][] subtractMatrices(double[][] firstMatrix, double[][] secondMatrix) {
@@ -225,7 +226,7 @@ public final class MatrixCalc {
     /**
      * Multiplies the given matrices using the naive method.
      *
-     * @param firstMatrix First matrix used in the multiplication
+     * @param firstMatrix  First matrix used in the multiplication
      * @param secondMatrix Second matrix used in the multiplication
      * @return The result of the multiplication
      */
@@ -250,10 +251,9 @@ public final class MatrixCalc {
     /**
      * Prepares the given matrices for the Strassen method of multiplication and trims the result back to original length
      *
-     * @param firstMatrix First matrix used in the multiplication
+     * @param firstMatrix  First matrix used in the multiplication
      * @param secondMatrix Second matrix used in the multiplication
-     * @param longestSide The longer side of the matrices
-     *
+     * @param longestSide  The longer side of the matrices
      * @return Result of multiplication as new array
      */
     private static double[][] strassenWrapper(double[][] firstMatrix, double[][] secondMatrix, int longestSide) {
@@ -286,9 +286,8 @@ public final class MatrixCalc {
     /**
      * The main recursive method used to multiply the two matrices using the Strassen method.
      *
-     * @param firstMatrix First matrix to be multiplied
+     * @param firstMatrix  First matrix to be multiplied
      * @param secondMatrix Second matrix to be multiplied
-     *
      * @return The result of the multiplication as a new array, not trimmed to original size
      */
     private static double[][] multiplyStrassen(double[][] firstMatrix, double[][] secondMatrix) {
@@ -389,21 +388,20 @@ public final class MatrixCalc {
         int halfpoint = matrixSize / 2;
 
         // Initialize 4 submatrices used in calculation
-        double[][] a11 = new double[matrixSize-halfpoint][matrixSize-halfpoint];
-        double[][] a12 = new double[matrixSize-halfpoint][halfpoint];
-        double[][] a21 = new double[halfpoint][matrixSize-halfpoint];
+        double[][] a11 = new double[matrixSize - halfpoint][matrixSize - halfpoint];
+        double[][] a12 = new double[matrixSize - halfpoint][halfpoint];
+        double[][] a21 = new double[halfpoint][matrixSize - halfpoint];
         double[][] a22 = new double[halfpoint][halfpoint];
-
 
 
         // Divide the matrix into the 4 submatrices
         for (int row = 0; row < matrixSize - halfpoint; row++) {
-            copyRow(matrix[row], 0, a11[row], 0, matrixSize-halfpoint);
-            copyRow(matrix[row], matrixSize-halfpoint, a12[row], 0, halfpoint);
+            copyRow(matrix[row], 0, a11[row], 0, matrixSize - halfpoint);
+            copyRow(matrix[row], matrixSize - halfpoint, a12[row], 0, halfpoint);
         }
-        for (int row = matrixSize-halfpoint; row < matrixSize; row++) {
-            copyRow(matrix[row], 0, a21[row - (matrixSize-halfpoint)], 0, matrixSize-halfpoint);
-            copyRow(matrix[row], matrixSize-halfpoint, a22[row - (matrixSize-halfpoint)], 0, halfpoint);
+        for (int row = matrixSize - halfpoint; row < matrixSize; row++) {
+            copyRow(matrix[row], 0, a21[row - (matrixSize - halfpoint)], 0, matrixSize - halfpoint);
+            copyRow(matrix[row], matrixSize - halfpoint, a22[row - (matrixSize - halfpoint)], 0, halfpoint);
         }
 
         a22 = strassenInvert(a22);
@@ -417,12 +415,12 @@ public final class MatrixCalc {
         // Combine the resulting quarters into one matrix, and return
         double[][] ret = new double[matrixSize][matrixSize];
         for (int row = 0; row < matrixSize - halfpoint; row++) {
-            copyRow(c11[row], 0, ret[row], 0, matrixSize-halfpoint);
-            copyRow(c12[row], 0, ret[row], matrixSize-halfpoint, halfpoint);
+            copyRow(c11[row], 0, ret[row], 0, matrixSize - halfpoint);
+            copyRow(c12[row], 0, ret[row], matrixSize - halfpoint, halfpoint);
         }
-        for (int row = matrixSize-halfpoint; row < matrixSize; row++) {
-            copyRow(c21[row - (matrixSize-halfpoint)], 0, ret[row], 0, matrixSize-halfpoint);
-            copyRow(c22[row - (matrixSize-halfpoint)], 0, ret[row], matrixSize-halfpoint, halfpoint);
+        for (int row = matrixSize - halfpoint; row < matrixSize; row++) {
+            copyRow(c21[row - (matrixSize - halfpoint)], 0, ret[row], 0, matrixSize - halfpoint);
+            copyRow(c22[row - (matrixSize - halfpoint)], 0, ret[row], matrixSize - halfpoint, halfpoint);
         }
         return ret;
     }
@@ -435,7 +433,7 @@ public final class MatrixCalc {
      */
     private static double[][] naiveInvert(double[][] matrix) {
         if (matrix.length == 1) {
-            matrix[0][0] = 1/matrix[0][0];
+            matrix[0][0] = 1 / matrix[0][0];
             return matrix;
         } else {
             double scalar = 1 / (matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]);
@@ -446,12 +444,12 @@ public final class MatrixCalc {
             matrix[1][1] = temp;
             return scale(matrix, scalar);
         }
-    } 
+    }
 
     /**
      * Checks that the two matrices are of identical size.
      *
-     * @param first First matrix supplied
+     * @param first  First matrix supplied
      * @param second Second matrix supplied
      * @return True if matrices are of identical size, else false
      */
@@ -469,7 +467,7 @@ public final class MatrixCalc {
      * Checks that the matrices are rectangulare and that the row count of the first matrix equals the column count
      * of the second matrix.
      *
-     * @param first First matrix to be checked
+     * @param first  First matrix to be checked
      * @param second Second matrix to be checked
      * @return True if valid, else false
      */
@@ -529,7 +527,7 @@ public final class MatrixCalc {
     /**
      * Determines the longest side present in the two matrices.
      *
-     * @param firstMatrix First matrix to be checked
+     * @param firstMatrix  First matrix to be checked
      * @param secondMatrix Second matrix to be checked
      * @return The length of the longest side
      */
@@ -549,9 +547,8 @@ public final class MatrixCalc {
     /**
      * Creates a new matrix of newSize length, and copies the contents of the given matrix into it
      *
-     * @param matrix Matrix to copy
+     * @param matrix  Matrix to copy
      * @param newSize Size of new matrix
-     *
      * @return Matrix of increased size with values of given matrix
      */
     private static double[][] increaseMatrixSize(double[][] matrix, int newSize) {
@@ -565,13 +562,14 @@ public final class MatrixCalc {
     /**
      * Copies a row or part of the row from the source matrix to the target matrix.
      *
-     * @param source Matrix to be copied from
+     * @param source              Matrix to be copied from
      * @param startPositionSource The position to copy from
-     * @param target Matrix to be copy to
+     * @param target              Matrix to be copy to
      * @param startPositionTarget The first position to copy to
-     * @param length The number of values to copy
+     * @param length              The number of values to copy
      */
-    private static void copyRow(double[] source, int startPositionSource, double[] target, int startPositionTarget, int length) {
+    private static void copyRow(double[] source, int startPositionSource, double[] target,
+                                int startPositionTarget, int length) {
         int targetIndex = startPositionTarget;
         int end = startPositionSource + length;
         for (int sourceIndex = startPositionSource; sourceIndex < end; sourceIndex++) {
